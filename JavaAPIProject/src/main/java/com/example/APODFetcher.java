@@ -1,25 +1,37 @@
 package com.example;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.FileWriter;
 import java.net.URL;
 
 public class APODFetcher {
-    public static String fetchAPODData(String apiKey) throws Exception {
-        String apiUrl = "https://api.nasa.gov/planetary/apod?api_key=" + apiKey;
-        URL url = new URL(apiUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String inputLine;
-        StringBuilder response = new StringBuilder();
+    private static final String API_KEY = "MksqFow96LdSKQkfQq3pnMbByg7MbGlvihVTpjMt";
+    private static final String APOD_API_URL = "https://api.nasa.gov/planetary/apod";
 
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
+    public static String fetchAPODData(String date) throws IOException {
+        String fullUrl = APOD_API_URL + "?api_key=" + API_KEY + "&date=" + date;
+        StringBuilder sb = new StringBuilder();
+
+        try (InputStream in = new URL(fullUrl).openStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        in.close();
-        return response.toString();
+
+        String jsonData = sb.toString();
+
+        // Save JSON data to file
+        try (FileWriter writer = new FileWriter("apod_data.json")) {
+            writer.write(jsonData);
+        }
+
+        return jsonData;
     }
 }
